@@ -5,10 +5,10 @@ import { DataContext } from "../Context/DataProvider";
 import { Link } from "react-router-dom";
 import CurrencyFormatter from "../CurrencyFormatter";
 
-function ProductCard({ product }) {
+function ProductCard({ product, flex, renderDesc }) {
   const { image, title, rating, price, id, description } = product;
-const [state, dispatch] = useContext(DataContext);
-
+// console.log(description);
+  const [state, dispatch] = useContext(DataContext);
 
   const addToCart = () => {
     dispatch({ type: "ADD_TO_BASKET", item: product });
@@ -17,7 +17,11 @@ const [state, dispatch] = useContext(DataContext);
   // console.log(state.basket);
 
   return (
-    <div className={classes.card__container}>
+    <div
+      className={`${classes.card__container} ${
+        flex ? classes.product_flexed : ""
+      }`}
+    >
       <Link to={`/product/${id}`}>
         <img src={image} alt="" className={classes.img_container} />
       </Link>
@@ -25,6 +29,8 @@ const [state, dispatch] = useContext(DataContext);
       <div>
         <h3>{title}</h3>
 
+        {renderDesc && <div style={{ maxWidth: "700px" }}>{description}</div>}
+        
         <div className={classes.rating}>
           <Rating value={rating?.rate} precision={0.1} />
           <small>{rating?.count}</small>
