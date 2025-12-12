@@ -25,8 +25,7 @@ function Cart() {
       type: "REMOVE_FROM_BASKET",
       id
     });
-  }
-
+  } 
   return (
     <Layout>
       <section
