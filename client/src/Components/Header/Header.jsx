@@ -7,6 +7,7 @@ import LowerHeader from "./LowerHeader";
 import { DataContext } from "../Context/DataProvider";
 import Cart from "../../Pages/Cart/Cart";
 import { Link } from "react-router-dom";
+import { auth } from "../../utils/firebase";
 
 function Header() {
   const [{ basket, user }, dispatch] = useContext(DataContext);
