@@ -7,8 +7,8 @@ import Auth from "./Pages/Auth/Auth";
 import ProductDetail from "./Pages/productDetail/ProductDetails";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
-import Payment from "./Pages/payment/Payment";
-import Orders from "./Pages/orders/Orders";
+import Payment from "./Pages/Payment/Payment";
+import Orders from "./Pages/Orders/Orders";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 
 function Router() {
