@@ -1,30 +1,82 @@
 import { useContext, useState } from "react";
 import classes from "./Payment.module.css";
-import { DataContext } from "../../Components/Context/DataProvider";  
+import { DataContext } from "../../components/Context/DataProvider";
 import Layout from "../../Layout/Layout";
 import ProductCard from "../../components/Product/ProductCard";
 import { CardElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import { ClipLoader } from "react-spinners";
 import { useNavigate } from "react-router-dom";
-import CurrencyFormatter from "../../components/CurrencyFormatter"; 
+import CurrencyFormatter from "../../components/CurrencyFormatter";
+import { axiosInstance } from "../../api/axios";
 import { db } from "../../utils/firebase";
-const Payment = () => {
+ 
+function Payment() {
   const [{ user, basket }, dispatch] = useContext(DataContext);
 
   const totalItem = basket?.reduce((accumulator, item) => {
     return item.quantity + accumulator;
   }, 0);
 
- const totalPrice = basket.reduce((amount, item) => {
-   return item.price * item.quantity + amount;
- }, 0);
- const stripe = useStripe();
- const elements = useElements();
-   const [cardError, setCardError] = useState(null);
-    const handleChange = (e) => {
-      // console.log(e);
-      e?.error?.message ? setCardError(e?.error?.message) : setCardError("");
-    };
+  const totalPrice = basket.reduce((amount, item) => {
+    return item.price * item.quantity + amount;
+  }, 0);
+
+  const [cardError, setCardError] = useState(null);
+  const [processing, setProcessing] = useState(false);
+
+  const stripe = useStripe();
+  const elements = useElements();
+  const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    // console.log(e);
+    e?.error?.message ? setCardError(e?.error?.message) : setCardError("");
+  };
+
+  const handlePayment = async (e) => {
+    e.preventDefault();
+
+    try {
+      setProcessing(true);
+      // 1. backend || functions ---> contact to the client secret
+      const response = await axiosInstance({
+        method: "POST",
+        url: `/payment/create?total=${totalPrice * 100}`,
+      });
+
+      console.log(response.data);
+      const clientSecret = response.data.clientSecret;
+
+      // 2. client side (react side confirmation)
+      const { paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: {
+          card: elements.getElement(CardElement),
+        },
+      });
+
+      console.log(paymentIntent);
+
+      // 3. after the confirmation --> order firestore database save, clear basket
+      await db
+        .collection("users")
+        .doc(user.uid)
+        .collection("orders")
+        .doc(paymentIntent.id)
+        .set({
+          basket: basket,
+          amount: paymentIntent.amount,
+          created: paymentIntent.created,
+        });
+      // empty the basket
+      dispatch({ type: "EMPTY_BASKET" });
+
+      setProcessing(false);
+      navigate("/orders", { state: { msg: "you have placed new Order" } });
+    } catch (error) {
+      console.log(error);
+      setProcessing(false);
+    }
+  };
 
   return (
     <Layout>
@@ -50,7 +102,7 @@ const Payment = () => {
           <h3>Review items and delivery</h3>
           <div>
             {basket?.map((item) => (
-              <ProductCard key={item.id} product={item} flex={true} />
+              <ProductCard key={item.id} product={item} flag cart />
             ))}
           </div>
         </div>
@@ -61,7 +113,7 @@ const Payment = () => {
           <h3>Payment methods</h3>
           <div className={classes.payment__card__container}>
             <div className={classes.payment__details}>
-              <form  >
+              <form onSubmit={handlePayment}>
                 {/* error */}
                 {cardError && (
                   <small style={{ color: "red" }}>{cardError}</small>
@@ -77,8 +129,16 @@ const Payment = () => {
                       <CurrencyFormatter amount={totalPrice} />
                     </span>
                   </div>
-                  <button>Pay Now</button>
-                 
+                  <button type="submit">
+                    {processing ? (
+                      <div className={classes.loading}>
+                        <ClipLoader color="gray" size={12} />
+                        <p>Please Wait ...</p>
+                      </div>
+                    ) : (
+                      " Pay Now"
+                    )}
+                  </button>
                 </div>
               </form>
             </div>
@@ -87,6 +147,6 @@ const Payment = () => {
       </section>
     </Layout>
   );
-};
+}
 
 export default Payment;
