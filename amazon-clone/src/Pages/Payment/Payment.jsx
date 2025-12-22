@@ -54,7 +54,7 @@ function Payment() {
         },
       });
 
-      console.log(paymentIntent);
+      // console.log(paymentIntent);
 
       // 3. after the confirmation --> order firestore database save, clear basket
       await db
@@ -130,7 +130,7 @@ function Payment() {
                     </span>
                   </div>
                   <button type="submit">
-                    {processing ? (
+                    {processing? (
                       <div className={classes.loading}>
                         <ClipLoader color="gray" size={12} />
                         <p>Please Wait ...</p>

@@ -2,7 +2,7 @@ import React from "react";
 import { Type } from "../../utils/action.type";
 import { useContext, useState } from "react";
 import classes from "./Auth.module.css";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { auth } from "../../utils/firebase";
 import { PulseLoader } from "react-spinners";
 
@@ -27,6 +27,7 @@ const Auth = () => {
   // console.log(email, password);
   // console.log(user);
   const navigate = useNavigate();
+  const navStateData = useLocation();
   const authHandler = async (e) => {
     e.preventDefault();
     if (e.target.name === "signin") {
@@ -39,7 +40,7 @@ const Auth = () => {
             user: userInfo.user,
           });
           setLoading({ ...loading, signIn: false });
-          navigate("/");
+          navigate(navStateData?.state?.redirect || "/");
         })
         .catch((err) => {
           setErrorMessage(err.message);
@@ -55,7 +56,7 @@ const Auth = () => {
             user: userInfo.user,
           });
           setLoading({ ...loading, signUp: false });
-          navigate("/");
+          navigate(navStateData?.state?.redirect || "/");
         })
         .catch((err) => {
           setErrorMessage(err.message);
@@ -76,7 +77,18 @@ const Auth = () => {
       {/* form */}
       <div className={classes.login__container}>
         <h1>Sign In</h1>
-
+{
+  navStateData?.state?.msg &&(
+    <small style={{
+      padding :"5px",
+      textAlign : "center",
+      color:"red",
+      fontWeight:"bold",
+    }}>
+      {navStateData?.state?.msg}
+    </small>
+  )
+}
         <form action="">
           <div>
             <label htmlFor="email">Email</label>
