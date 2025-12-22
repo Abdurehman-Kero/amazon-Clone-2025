@@ -9,7 +9,7 @@ import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 import Payment from "./Pages/Payment/Payment";
 import Orders from "./Pages/Orders/Orders";
-import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
+import ProtectedRoute from "./Components/ProtectedRoute/ProtectedRoute";
 
 function Router() {
   const stripePromise = loadStripe(
