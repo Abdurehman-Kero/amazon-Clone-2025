@@ -46,7 +46,7 @@ export function reducer(state, action) {
     case "EMPTY_BASKET":
       return { ...state, basket: [] };
 
-    case "SET_USER":
+    case Type.SET_USER:
       return { ...state, user: action.user };
     default:
       return state;

@@ -1,9 +1,68 @@
-import React from 'react'
+import React from "react";
+import { Type } from "../../utils/action.type";
 import { useContext, useState } from "react";
 import classes from "./Auth.module.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { auth } from "../../utils/firebase";
+import { PulseLoader } from "react-spinners";
+
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+} from "firebase/auth";
+import { DataContext } from "../../Components/Context/DataProvider";
+
+
 const Auth = () => {
+  const [loading, setLoading] = useState({
+    signIn: false,
+    signUp: false,
+  });
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [{ user }, dispatch] = useContext(DataContext);
+  
+  // console.log(email, password);
+  // console.log(user);
+  const navigate = useNavigate();
+  const authHandler = async (e) => {
+    e.preventDefault();
+    if (e.target.name === "signin") {
+      setLoading({ ...loading, signIn: true });
+      signInWithEmailAndPassword(auth, email, password)
+        .then((userInfo) => {
+          // console.log(userInfo);
+          dispatch({
+            type: Type.SET_USER,
+            user: userInfo.user,
+          });
+          setLoading({ ...loading, signIn: false });
+          navigate("/");
+        })
+        .catch((err) => {
+          setErrorMessage(err.message);
+          setLoading({ ...loading, signIn: false });
+        });
+    } else {
+      setLoading({ ...loading, signUp: true });
+      createUserWithEmailAndPassword(auth, email, password)
+        .then((userInfo) => {
+          // console.log(userInfo);
+          dispatch({
+            type: Type.SET_USER,
+            user: userInfo.user,
+          });
+          setLoading({ ...loading, signUp: false });
+          navigate("/");
+        })
+        .catch((err) => {
+          setErrorMessage(err.message);
+          setLoading({ ...loading, signUp: false });
+        });
+    }
+  };
   return (
     <section className={classes.login}>
       {/* logo */}
@@ -21,18 +80,32 @@ const Auth = () => {
         <form action="">
           <div>
             <label htmlFor="email">Email</label>
-            <input type="email" id="email" />
+            <input
+              type="email"
+              id="email"
+              onChange={(e) => setEmail(e.target.value)}
+            />
           </div>
           <div>
             <label htmlFor="password">Password</label>
-            <input type="password" id="password" />
+            <input
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
           </div>
           <button
             type="submit"
             name="signin"
+            onClick={authHandler}
             className={classes.login__signInButton}
           >
-            Sign in
+            {loading.signIn ? (
+              <PulseLoader color="#000" size={10} />
+            ) : (
+              "Sign in"
+            )}
           </button>
         </form>
 
@@ -47,13 +120,23 @@ const Auth = () => {
         <button
           type="submit"
           name="signup"
+          onClick={authHandler}
           className={classes.login__registerButton}
         >
-          Create your Amazon Account
+          {loading.signUp ? (
+            <PulseLoader color="#000" size={10} />
+          ) : (
+            "Create your Amazon Account"
+          )}
         </button>
+        {errorMessage && (
+          <small style={{ paddingTop: "5px", color: "red" }}>
+            {errorMessage}
+          </small>
+        )}
       </div>
     </section>
   );
 };
 
-export default Auth
+export default Auth;
