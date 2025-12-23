@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import classes from "./product.module.css";
+import classes from "./Product.module.css";
 import Rating from "@mui/material/Rating";
 import { DataContext } from "../Context/DataProvider";
 import { Link } from "react-router-dom";
